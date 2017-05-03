@@ -54,7 +54,7 @@ module Spree
           shipments_hash.each do |s|
             shipment = Shipment.new
             shipment.tracking       = s[:tracking]
-            shipment.stock_location = Spree::StockLocation.find_by_admin_name(s[:stock_location]) || Spree::StockLocation.find_by_name!(s[:stock_location])
+            shipment.stock_location = Spree::StockLocation.find_by_admin_name(s[:stock_location]) || Spree::StockLocation.find_by!(name: s[:stock_location])
 
             inventory_units = s[:inventory_units] || []
             inventory_units.each do |iu|
@@ -131,7 +131,7 @@ module Spree
             # Order API should be using state as that's the normal payment field.
             # spree_wombat serializes payment state as status so imported orders should fall back to status field.
             payment.state = p[:state] || p[:status] || 'completed'
-            payment.payment_method = Spree::PaymentMethod.find_by_name!(p[:payment_method])
+            payment.payment_method = Spree::PaymentMethod.find_by!(name: p[:payment_method])
             payment.source = create_source_payment_from_params(p[:source], payment) if p[:source]
             payment.save!
           end
