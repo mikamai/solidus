@@ -103,6 +103,11 @@ module Spree
     self.whitelisted_ransackable_associations = %w[stores variants_including_master master variants]
     self.whitelisted_ransackable_attributes = %w[slug]
 
+    # This enables "Show Deleted" checkbox feature in admin/products page
+    def self.ransackable_scopes(_auth_object = nil)
+      %i(with_deleted)
+    end
+
     # @return [Boolean] true if there are any variants
     def has_variants?
       variants.any?
