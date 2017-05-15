@@ -14,7 +14,7 @@ describe Spree::Admin::ProductsController, type: :controller do
       expect(assigns[:collection]).to include(product)
     end
 
-    # Regression test for
+    # Regression test for https://github.com/spree/spree/issues/1903
     context 'when soft deleted products exist' do
       let!(:soft_deleted_product) { create(:product, sku: "ABC123").destroy }
 
