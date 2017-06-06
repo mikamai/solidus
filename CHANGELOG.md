@@ -1,7 +1,25 @@
 ## Solidus 2.3.0 (master, unreleased)
 
+- Deprecate `Spree::Order#assign_default_addresses!` in favor of `Order.new.assign_default_user_addresses`. [\#1954](https://github.com/solidusio/solidus/pull/1954) ([kennyadsl](https://github.com/kennyadsl))
+- Change how line item options are allowed in line items controller. [\#1943](https://github.com/solidusio/solidus/pull/1943)
+- Allow custom separator between a promotion's `base_code` and `suffix` [\#1951](https://github.com/solidusio/solidus/pull/1951) ([ericgross](https://github.com/ericgross))
+- Ignore `adjustment.finalized` on tax adjustments. [\#1936](https://github.com/solidusio/solidus/pull/1936) ([jordan-brough](https://github.com/jordan-brough))
+- Deprecate `#simple_current_order`
+[\#1915](https://github.com/solidusio/solidus/pull/1915) ([ericsaupe](https://github.com/ericsaupe))
+- Transform the relation between TaxRate and TaxCategory to a Many to Many [\#1851](https://github.com/solidusio/solidus/pull/1851) ([vladstoick](https://github.com/vladstoick))
 
-## Solidus 2.2.0 (unreleased)
+  This fixes issue [\#1836](https://github.com/solidusio/solidus/issues/1836). By allowing a TaxRate to tax multiple categories, stores don't have to create multiple TaxRates with the same value if a zone doesn't have different tax rates for some tax categories.
+
+- Adjustments without a source are now included in `line_item.adjustment_total`
+[\#1933](https://github.com/solidusio/solidus/pull/1933) ([alexstoick](https://github.com/alexstoick))
+
+## Solidus 2.2.1 (2017-05-09)
+
+- Fix migrating CreditCards to WalletPaymentSource [\#1898](https://github.com/solidusio/solidus/pull/1898) ([jhawthorn](https://github.com/jhawthorn))
+- Fix setting the wallet's default payment source to the same value [\#1888](https://github.com/solidusio/solidus/pull/1888) ([ahoernecke](https://github.com/ahoernecke))
+- Fix assigning nil to `default_wallet_payment_source=` [\#1896](https://github.com/solidusio/solidus/pull/1896) ([jhawthorn](https://github.com/jhawthorn))
+
+## Solidus 2.2.0 (2017-05-01)
 
 ### Major Changes
 

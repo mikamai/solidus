@@ -29,6 +29,7 @@ describe Spree::Admin::ProductsController, type: :controller do
 
       context 'when params[:q][:with_deleted] is set to "true"' do
         let(:params) { { q: { with_deleted: 'true' } } }
+
         it 'includes soft-deleted products' do
           get :index, params: params
           expect(assigns[:collection]).to include(soft_deleted_product)

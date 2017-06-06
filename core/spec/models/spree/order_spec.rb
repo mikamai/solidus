@@ -4,6 +4,14 @@ describe Spree::Order, type: :model do
   let(:store) { create(:store) }
   let(:user) { create(:user, email: "spree@example.com") }
   let(:order) { create(:order, user: user, store: store) }
+  let(:promotion) do
+    FactoryGirl.create(
+      :promotion,
+      :with_order_adjustment,
+      code: "discount"
+    )
+  end
+  let(:code) { promotion.codes.first }
 
   before do
     allow(Spree::LegacyUser).to receive_messages(current: mock_model(Spree::LegacyUser, id: 123))
@@ -171,12 +179,14 @@ describe Spree::Order, type: :model do
       create(:line_item, order: order)
       create(:shipment, order: order)
       create(:adjustment, adjustable: order, order: order)
+      promotion.activate(order: order, promotion_code: code)
       order.update!
 
       # Make sure we are asserting changes
       expect(order.line_items).not_to be_empty
       expect(order.shipments).not_to be_empty
       expect(order.adjustments).not_to be_empty
+      expect(order.promotions).not_to be_empty
       expect(order.item_total).not_to eq 0
       expect(order.item_count).not_to eq 0
       expect(order.shipment_total).not_to eq 0
@@ -188,6 +198,7 @@ describe Spree::Order, type: :model do
       expect(order.line_items).to be_empty
       expect(order.shipments).to be_empty
       expect(order.adjustments).to be_empty
+      expect(order.promotions).to be_empty
       expect(order.item_total).to eq 0
       expect(order.item_count).to eq 0
       expect(order.shipment_total).to eq 0
@@ -771,6 +782,88 @@ describe Spree::Order, type: :model do
       expect do
         order.associate_user!(user)
       end.not_to change { address.persisted? }.from(false)
+    end
+  end
+
+  context "#assign_default_user_addresses!" do
+    let(:order) { Spree::Order.new }
+
+    subject { order.assign_default_user_addresses! }
+
+    context "when no user is associated to the order" do
+      it "does not associate any bill address" do
+        expect { subject }.not_to change { order.bill_address }.from(nil)
+      end
+
+      it "does not associate any ship address" do
+        expect { subject }.not_to change { order.ship_address }.from(nil)
+      end
+    end
+
+    context "when user is associated to the order" do
+      let(:user)         { build_stubbed(:user) }
+      let(:bill_address) { nil }
+      let(:ship_address) { nil }
+
+      before do
+        order.associate_user!(user)
+        user.bill_address = bill_address
+        user.ship_address = ship_address
+      end
+
+      context "but has no bill address associated" do
+        it "does not associate any bill address" do
+          expect { subject }.not_to change { order.bill_address }.from(nil)
+        end
+      end
+
+      context "and has an invalid bill address associated " do
+        let(:bill_address) { build(:address, firstname: nil) } # invalid address
+
+        it "does not associate any bill address" do
+          expect { subject }.not_to change { order.bill_address }.from(nil)
+        end
+      end
+
+      context "and has a valid address associated " do
+        let(:bill_address) { build(:address) }
+
+        it "does associate user bill address" do
+          expect { subject }.to change { order.bill_address }.from(nil).to(bill_address)
+        end
+      end
+
+      context "but has no ship address associated" do
+        it "does not associate any ship address" do
+          expect { subject }.not_to change { order.ship_address }.from(nil)
+        end
+      end
+
+      context "and has an invalid ship address associated " do
+        let(:ship_address) { build(:address, firstname: nil) } # invalid address
+
+        it "does not associate any ship address" do
+          expect { subject }.not_to change { order.ship_address }.from(nil)
+        end
+      end
+
+      context "and has a valid ship address associated" do
+        let(:ship_address) { build(:address) }
+
+        it "does associate user ship address" do
+          expect { subject }.to change { order.ship_address }.from(nil).to(ship_address)
+        end
+
+        context 'when checkout step does not include delivery' do
+          before do
+            expect(order).to receive(:checkout_steps) { %w[some step] }
+          end
+
+          it "does not associate any ship address" do
+            expect { subject }.not_to change { order.ship_address }.from(nil)
+          end
+        end
+      end
     end
   end
 
